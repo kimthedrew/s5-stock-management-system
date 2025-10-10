@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import calendar
 import json
 import pytz
+from sqlalchemy.exc import IntegrityError
 
 
 
@@ -804,16 +805,26 @@ def add_user():
             flash('Password must be at least 8 characters long!', 'error')
             return redirect(url_for('add_user'))
         
-        # Create new user
-        new_user = User(
-            username=username,
-            password=generate_password_hash(password),
-            role=role
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        flash(f'User {username} added successfully!', 'success')
-        return redirect(url_for('manage_users'))
+        try:
+            # Create new user
+            new_user = User(
+                username=username,
+                password=generate_password_hash(password),
+                role=role
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            flash(f'User {username} added successfully!', 'success')
+            return redirect(url_for('manage_users'))
+        except IntegrityError:
+            db.session.rollback()
+            flash('Username already exists! Please choose a different username.', 'error')
+            return redirect(url_for('add_user'))
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error creating user: {str(e)}")
+            flash('An error occurred while creating the user. Please try again.', 'error')
+            return redirect(url_for('add_user'))
     
     return render_template('admin/add_user.html')
 
@@ -834,11 +845,17 @@ def delete_user(id):
         flash('Cannot delete your own account!', 'error')
         return redirect(url_for('manage_users'))
     
-    username = user.username
-    db.session.delete(user)
-    db.session.commit()
-    flash(f'User {username} deleted successfully!', 'success')
-    return redirect(url_for('manage_users'))
+    try:
+        username = user.username
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'User {username} deleted successfully!', 'success')
+        return redirect(url_for('manage_users'))
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error deleting user: {str(e)}")
+        flash('An error occurred while deleting the user. Please try again.', 'error')
+        return redirect(url_for('manage_users'))
 
 @app.route('/admin/reset-data', methods=['GET', 'POST'])
 def reset_business_data():

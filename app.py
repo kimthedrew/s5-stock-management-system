@@ -721,34 +721,6 @@ def sales():
                            })
 
 
-@app.route('/add-sample-data')
-def add_sample_data():
-    with app.app_context():
-        # Add sample stock items
-        item1 = StockItem(
-            name="T-Shirt",
-            buying_price=5.99,
-            selling_price=12.99,
-            size="M",
-            quantity=100,
-            description="Cotton t-shirt"
-        )
-        
-        item2 = StockItem(
-            name="Jeans",
-            buying_price=15.50,
-            selling_price=29.99,
-            size="32",
-            quantity=50,
-            description="Blue denim jeans"
-        )
-        
-        db.session.add(item1)
-        db.session.add(item2)
-        db.session.commit()
-    
-    return "Sample data added!"
-
 @app.route('/health')
 def health_check():
     return 'OK', 200

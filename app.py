@@ -771,6 +771,75 @@ def initialize_database():
         else:
             print("Admin user already exists.")
 
+# User Management Routes
+@app.route('/admin/users')
+def manage_users():
+    """Display all users except the invisible admin"""
+    if 'user_id' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    # Get all users except admin@example.com
+    users = User.query.filter(User.username != 'admin@example.com').all()
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/users/add', methods=['GET', 'POST'])
+def add_user():
+    """Add a new user"""
+    if 'user_id' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        role = request.form['role']
+        
+        # Check if username already exists
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash('Username already exists!', 'error')
+            return redirect(url_for('add_user'))
+        
+        # Validate password length
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long!', 'error')
+            return redirect(url_for('add_user'))
+        
+        # Create new user
+        new_user = User(
+            username=username,
+            password=generate_password_hash(password),
+            role=role
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        flash(f'User {username} added successfully!', 'success')
+        return redirect(url_for('manage_users'))
+    
+    return render_template('admin/add_user.html')
+
+@app.route('/admin/users/delete/<int:id>')
+def delete_user(id):
+    """Delete a user (except the invisible admin)"""
+    if 'user_id' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    user = User.query.get_or_404(id)
+    
+    # Prevent deletion of the invisible admin and currently logged in user
+    if user.username == 'admin@example.com':
+        flash('Cannot delete the system administrator account!', 'error')
+        return redirect(url_for('manage_users'))
+    
+    if user.id == session['user_id']:
+        flash('Cannot delete your own account!', 'error')
+        return redirect(url_for('manage_users'))
+    
+    username = user.username
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'User {username} deleted successfully!', 'success')
+    return redirect(url_for('manage_users'))
+
 @app.route('/admin/reset-data', methods=['GET', 'POST'])
 def reset_business_data():
     """Reset all sales data to start fresh business operations"""

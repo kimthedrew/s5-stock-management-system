@@ -37,6 +37,19 @@
                         <i class="fas fa-arrow-right"></i>
                     </div>
                 </a>
+                
+                <a href="{{ url_for('manage_users') }}" class="action-card users-card">
+                    <div class="card-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <div class="card-content">
+                        <h4>Manage Users</h4>
+                        <p>Add, remove, and view system users</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
             </div>
         </div>
         
@@ -269,6 +282,10 @@
 
 .danger-card .card-icon {
     background: linear-gradient(135deg, #fa709a, #fee140);
+}
+
+.users-card .card-icon {
+    background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
 }
 
 .card-content {

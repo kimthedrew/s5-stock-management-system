@@ -10,3 +10,9 @@ pip install -r requirements.txt
 echo "Initializing database and creating admin users..."
 python init_db.py
 echo "Database initialization complete!"
+
+# Run migrations if DATABASE_URL is set (production)
+if [ -n "$DATABASE_URL" ]; then
+    echo "Running database migrations..."
+    flask db upgrade || echo "No migrations to run"
+fi

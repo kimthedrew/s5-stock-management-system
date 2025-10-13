@@ -16,7 +16,18 @@ app.secret_key = 'your_secret_key'
 
 app.jinja_env.filters['tojson'] = json.dumps
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+# Use PostgreSQL in production (from DATABASE_URL env var), SQLite locally
+import os
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Some providers use postgres://, but SQLAlchemy needs postgresql://
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://')
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    # Local development uses SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+
 app.config['TIMEZONE'] = 'Africa/Nairobi'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)

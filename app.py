@@ -24,6 +24,14 @@ if database_url:
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://')
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    # PostgreSQL connection pool settings for production
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,  # Verify connections before use
+        'pool_recycle': 300,    # Recycle connections every 5 minutes
+        'pool_timeout': 20,     # Wait 20 seconds for connection
+        'max_overflow': 0,      # Don't create extra connections
+        'pool_size': 1          # Use single connection for free tier
+    }
 else:
     # Local development uses SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'

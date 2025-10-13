@@ -50,6 +50,19 @@
                         <i class="fas fa-arrow-right"></i>
                     </div>
                 </a>
+                
+                <a href="{{ url_for('fix_database') }}" class="action-card database-card">
+                    <div class="card-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="card-content">
+                        <h4>Fix Database</h4>
+                        <p>Fix database schema issues (if any)</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
             </div>
         </div>
         
@@ -286,6 +299,10 @@
 
 .users-card .card-icon {
     background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+}
+
+.database-card .card-icon {
+    background: linear-gradient(135deg, #667eea, #764ba2);
 }
 
 .card-content {

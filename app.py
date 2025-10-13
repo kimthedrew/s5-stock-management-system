@@ -774,6 +774,65 @@ def manage_users():
     users = User.query.filter(User.username != 'admin@example.com').all()
     return render_template('admin/users.html', users=users)
 
+@app.route('/admin/fix-database', methods=['GET'])
+def fix_database():
+    """Manual endpoint to fix database schema issues."""
+    if 'user_id' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+    
+    try:
+        import psycopg2
+        from urllib.parse import urlparse
+        import os
+        
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            flash('DATABASE_URL not found', 'error')
+            return redirect(url_for('admin_dashboard'))
+        
+        # Parse DATABASE_URL
+        url = urlparse(database_url)
+        
+        # Connect to PostgreSQL
+        conn = psycopg2.connect(
+            host=url.hostname,
+            port=url.port,
+            database=url.path[1:],
+            user=url.username,
+            password=url.password,
+            sslmode='require'
+        )
+        
+        cur = conn.cursor()
+        
+        # Check current column type
+        cur.execute("""
+            SELECT data_type, character_maximum_length 
+            FROM information_schema.columns 
+            WHERE table_name = 'user' AND column_name = 'password'
+        """)
+        
+        result = cur.fetchone()
+        if result:
+            current_type, max_length = result
+            flash(f'Current password column: {current_type}({max_length})', 'info')
+            
+            if max_length and max_length < 255:
+                # Alter the column
+                cur.execute('ALTER TABLE "user" ALTER COLUMN password TYPE VARCHAR(255);')
+                conn.commit()
+                flash('✅ Password column successfully expanded to 255 characters!', 'success')
+            else:
+                flash('✅ Password column is already large enough!', 'success')
+        
+        cur.close()
+        conn.close()
+        
+    except Exception as e:
+        flash(f'❌ Error: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_dashboard'))
+
 @app.route('/admin/users/add', methods=['GET', 'POST'])
 def add_user():
     """Add a new user"""

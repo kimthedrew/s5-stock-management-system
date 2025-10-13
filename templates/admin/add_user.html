@@ -37,6 +37,7 @@
                         minlength="8"
                         placeholder="Enter password"
                         class="form-control"
+                        onclick="focusPasswordInput()"
                     >
                     <button type="button" class="toggle-password" onclick="togglePassword()">
                         <i class="fas fa-eye" id="toggleIcon"></i>
@@ -177,20 +178,32 @@
 }
 
 .password-input-wrapper input {
-    padding-right: 45px;
+    padding-right: 50px;
+    cursor: text;
 }
 
 .toggle-password {
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
     color: #6c757d;
     cursor: pointer;
-    padding: 5px;
-    transition: color 0.2s ease;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    z-index: 1;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-password:hover {
+    background-color: rgba(102, 126, 234, 0.1);
 }
 
 .toggle-password:hover {
@@ -363,7 +376,17 @@
 </style>
 
 <script>
-function togglePassword() {
+function focusPasswordInput() {
+    const passwordInput = document.getElementById('password');
+    passwordInput.focus();
+}
+
+function togglePassword(event) {
+    // Prevent the click from interfering with input focus
+    if (event) {
+        event.stopPropagation();
+    }
+    
     const passwordInput = document.getElementById('password');
     const toggleIcon = document.getElementById('toggleIcon');
     
@@ -376,7 +399,32 @@ function togglePassword() {
         toggleIcon.classList.remove('fa-eye-slash');
         toggleIcon.classList.add('fa-eye');
     }
+    
+    // Refocus the input after toggling
+    setTimeout(() => {
+        passwordInput.focus();
+    }, 10);
 }
+
+// Ensure password input is always editable
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('password');
+    const passwordWrapper = document.querySelector('.password-input-wrapper');
+    
+    // Make sure clicking anywhere in the wrapper focuses the input
+    passwordWrapper.addEventListener('click', function(e) {
+        // Only focus if not clicking the toggle button
+        if (e.target !== document.querySelector('.toggle-password') && 
+            !document.querySelector('.toggle-password').contains(e.target)) {
+            passwordInput.focus();
+        }
+    });
+    
+    // Ensure input is editable
+    passwordInput.addEventListener('click', function() {
+        this.focus();
+    });
+});
 
 // Form validation
 document.getElementById('addUserForm').addEventListener('submit', function(e) {

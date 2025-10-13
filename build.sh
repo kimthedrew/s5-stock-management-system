@@ -14,5 +14,8 @@ echo "Database initialization complete!"
 # Run migrations if DATABASE_URL is set (production)
 if [ -n "$DATABASE_URL" ]; then
     echo "Running database migrations..."
-    flask db upgrade || echo "No migrations to run"
+    flask db upgrade
+    echo "Migrations completed successfully!"
+else
+    echo "No DATABASE_URL found, skipping migrations (local development)"
 fi

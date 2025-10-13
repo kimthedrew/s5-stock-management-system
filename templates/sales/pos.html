@@ -455,6 +455,59 @@
             position: relative;
             min-height: 300px;
         }
+        
+        /* Fix product table for mobile - make it more compact */
+        .item-table {
+            font-size: 0.85rem;
+            table-layout: fixed;
+            width: 100%;
+        }
+        
+        .item-table th,
+        .item-table td {
+            padding: 8px 4px;
+            word-wrap: break-word;
+        }
+        
+        /* Set specific column widths for mobile */
+        .item-table th:nth-child(1),
+        .item-table td:nth-child(1) { width: 30%; } /* Item */
+        .item-table th:nth-child(2),
+        .item-table td:nth-child(2) { width: 20%; } /* Price */
+        .item-table th:nth-child(3),
+        .item-table td:nth-child(3) { width: 15%; } /* Size */
+        .item-table th:nth-child(4),
+        .item-table td:nth-child(4) { width: 15%; } /* Stock */
+        .item-table th:nth-child(5),
+        .item-table td:nth-child(5) { width: 20%; } /* Action */
+        
+        /* Make action buttons more compact */
+        .add-to-cart {
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        
+        /* Ensure horizontal scroll for table on very small screens */
+        .products-section {
+            overflow-x: auto;
+        }
+        
+        .item-table {
+            min-width: 400px;
+        }
+        
+        /* Add visual indicator for horizontal scroll */
+        .products-section::after {
+            content: "← Swipe to see more →";
+            display: block;
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            padding: 5px;
+            background: #f0f0f0;
+            border-radius: 0 0 8px 8px;
+        }
     }
 </style>
 
@@ -506,7 +559,7 @@
                         <td>KES {{ item.selling_price }}</td>
                         <td>{{ item.size if item.size else '-' }}</td>
                         <td>{{ item.quantity }}</td>
-                        <td><button class="add-to-cart">Add to Cart</button></td>
+                        <td><button class="add-to-cart" data-mobile-text="Add" data-desktop-text="Add to Cart">Add to Cart</button></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -755,6 +808,22 @@
                 notification.classList.remove('show');
             }, 3000);
         }
+        
+        // Handle mobile button text
+        function updateButtonText() {
+            const buttons = document.querySelectorAll('.add-to-cart');
+            buttons.forEach(button => {
+                if (window.innerWidth <= 576) {
+                    button.textContent = button.dataset.mobileText;
+                } else {
+                    button.textContent = button.dataset.desktopText;
+                }
+            });
+        }
+        
+        // Update button text on load and resize
+        updateButtonText();
+        window.addEventListener('resize', updateButtonText);
     });
 </script>
 {% endblock %}
